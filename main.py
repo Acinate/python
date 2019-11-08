@@ -1,4 +1,5 @@
-from alphavantage_api import File, AlphaApi
+from alphavantage_api import File, AlphaApi, AlphaData
+from chart import AlphaChart
 
 
 def scan_datapoints():
@@ -14,6 +15,14 @@ def get_datapoints():
     return file.read_datapoints_from_file()
 
 
-scan_datapoints()
-dp = get_datapoints()
-print(dp)
+def get_alphadata():
+    datapoints = get_datapoints()
+    alphadata = AlphaData()
+    alphadata.get_alpha_data(datapoints)
+    return alphadata
+
+
+# scan_datapoints()
+alphadata = get_alphadata()
+alphachart = AlphaChart(alphadata)
+alphachart.display_chart()

@@ -3,7 +3,7 @@ import json
 import time
 
 base_url = "https://www.alphavantage.co/query?"
-symbol = "AAPL"
+symbol = "WDC"
 api_key = "JHGNBLAO8X1183MI"
 
 intraday_url = base_url + "function=TIME_SERIES_INTRADAY&symbol="+symbol+"&interval=1min&outputsize=full&apikey="+api_key
@@ -18,13 +18,10 @@ adx_url = base_url + "function=ADX&symbol="+symbol+"&interval=1min&time_period=1
 class AlphaApi:
     def __init__(self):
         self.datapoints = {}
-        self.upper_band = None
-        self.lower_band = None
 
     def get_datapoints(self):
         self.get_intraday_data()
         self.get_technicals()
-        self.find_upper_lower_bands()
 
     def get_intraday_data(self):
         url = intraday_url
@@ -63,27 +60,6 @@ class AlphaApi:
                     if self.datapoints.get(key) is not None:
                         self.datapoints.get(key).add_technical(technicals[i], v)
                 i += 1
-
-    def find_upper_lower_bands(self):
-        high_datapoint = None
-        low_datapoint = None
-        for key in self.datapoints.keys():
-            if high_datapoint is None:
-                if self.datapoints[key].close is not None:
-                    high_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key].close
-                if current is not None and current < high_datapoint.close:
-                    high_datapoint = self.datapoints[key]
-            if low_datapoint is None:
-                if self.datapoints[key].close is not None:
-                    low_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key].close
-                if current is not None and current > low_datapoint.close:
-                    low_datapoint = self.datapoints[key]
-        self.upper_band = high_datapoint
-        self.lower_band = low_datapoint
 
 
 class DataPoint:
@@ -155,3 +131,37 @@ class File:
         fp = open(self.filename, "r")
         datapoints = json.load(fp)
         return datapoints
+
+
+class AlphaData:
+    def __init__(self):
+        self.datapoints = {}
+        self.upper_band = None
+        self.lower_band = None
+        self.middle_band = None
+
+    def get_alpha_data(self, datapoints):
+        self.datapoints = datapoints
+        self.find_upper_lower_bands()
+
+    def find_upper_lower_bands(self):
+        high_datapoint = None
+        low_datapoint = None
+        for key in self.datapoints.keys():
+            if high_datapoint is None:
+                if self.datapoints[key]["close"] is not None:
+                    high_datapoint = self.datapoints[key]
+            else:
+                current = self.datapoints[key]["close"]
+                if current is not None and current < high_datapoint["close"]:
+                    high_datapoint = self.datapoints[key]
+            if low_datapoint is None:
+                if self.datapoints[key]["close"] is not None:
+                    low_datapoint = self.datapoints[key]
+            else:
+                current = self.datapoints[key]["close"]
+                if current is not None and current > low_datapoint["close"]:
+                    low_datapoint = self.datapoints[key]
+        self.upper_band = high_datapoint
+        self.lower_band = low_datapoint
+        self.middle_band = (float(high_datapoint["close"]) + float(low_datapoint["close"])) / 2
