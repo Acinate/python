@@ -2,29 +2,32 @@ import requests
 import json
 import time
 
-base_url = "https://www.alphavantage.co/query?"
-symbol = "WDC"
-api_key = "JHGNBLAO8X1183MI"
-
-intraday_url = base_url + "function=TIME_SERIES_INTRADAY&symbol="+symbol+"&interval=1min&outputsize=full&apikey="+api_key
-sma_url = base_url + "function=SMA&symbol="+symbol+"&interval=1min&time_period=180&series_type=open&apikey="+api_key
-ema_url = base_url + "function=EMA&symbol="+symbol+"&interval=1min&time_period=15&series_type=open&apikey="+api_key
-vwap_url = base_url + "function=VWAP&symbol="+symbol+"&interval=1min&apikey="+api_key
-macd_url = base_url + "function=MACD&symbol="+symbol+"&interval=1min&series_type=open&apikey="+api_key
-rsi_url = base_url + "function=RSI&symbol="+symbol+"&interval=1min&time_period=14&series_type=open&apikey="+api_key
-adx_url = base_url + "function=ADX&symbol="+symbol+"&interval=1min&time_period=100&apikey="+api_key
-
 
 class AlphaApi:
-    def __init__(self):
+    def __init__(self, symbol):
         self.datapoints = {}
+        self.url = "https://www.alphavantage.co/query?function="
+        self.key = "apikey=JHGNBLAO8X1183MI"
+        self.quote_url = self.url + "TIME_SERIES_INTRADAY&symbol=" + symbol + "&interval=1min&outputsize=full&" + self.key
+        self.sma_url = self.url + "SMA&symbol=" + symbol + "&interval=1min&time_period=180&series_type=open&" + self.key
+        self.ema_url = self.url + "EMA&symbol=" + symbol + "&interval=1min&time_period=15&series_type=open&" + self.key
+        self.vwap_url = self.url + "VWAP&symbol=" + symbol + "&interval=1min&" + self.key
+        self.macd_url = self.url + "MACD&symbol=" + symbol + "&interval=1min&series_type=open&apikey=" + self.key
+        self.rsi_url = self.url + "RSI&symbol=" + symbol + "&interval=1min&time_period=14&series_type=open&" + self.key
+        self.adx_url = self.url + "ADX&symbol=" + symbol + "&interval=1min&time_period=100&" + self.key
+
+    def scan_datapoints(self):
+        self.get_datapoints()
+        file = File()
+        file.write_datapoints_to_file(self.datapoints)
 
     def get_datapoints(self):
         self.get_intraday_data()
         self.get_technicals()
+        return self.datapoints
 
     def get_intraday_data(self):
-        url = intraday_url
+        url = self.quote_url
         response = requests.get(url)
         json_response = response.json()
         intraday = json_response.get("Time Series (1min)")
@@ -41,7 +44,7 @@ class AlphaApi:
             self.datapoints[dp.time] = dp
 
     def get_technicals(self):
-        urls = [sma_url, ema_url, vwap_url, macd_url, rsi_url, adx_url]
+        urls = [self.sma_url, self.ema_url, self.vwap_url, self.macd_url, self.rsi_url, self.adx_url]
         technicals = ["SMA", "EMA", "VWAP", "MACD", "RSI", "ADX"]
         i = 0
         while i < len(urls):
@@ -60,6 +63,38 @@ class AlphaApi:
                     if self.datapoints.get(key) is not None:
                         self.datapoints.get(key).add_technical(technicals[i], v)
                 i += 1
+
+
+class AlphaData:
+    def __init__(self, datapoints):
+        self.datapoints = datapoints
+        self.upper_band = None
+        self.lower_band = None
+        self.middle_band = None
+        self.sma_distance = None
+        self.find_upper_lower_bands()
+
+    def find_upper_lower_bands(self):
+        high_datapoint = None
+        low_datapoint = None
+        for key in self.datapoints.keys():
+            if high_datapoint is None:
+                if self.datapoints[key]["close"] is not None:
+                    high_datapoint = self.datapoints[key]
+            else:
+                current = self.datapoints[key]["close"]
+                if current is not None and current < high_datapoint["close"]:
+                    high_datapoint = self.datapoints[key]
+            if low_datapoint is None:
+                if self.datapoints[key]["close"] is not None:
+                    low_datapoint = self.datapoints[key]
+            else:
+                current = self.datapoints[key]["close"]
+                if current is not None and current > low_datapoint["close"]:
+                    low_datapoint = self.datapoints[key]
+        self.upper_band = float(high_datapoint["close"])
+        self.lower_band = float(low_datapoint["close"])
+        self.middle_band = (float(high_datapoint["close"]) + float(low_datapoint["close"])) / 2
 
 
 class DataPoint:
@@ -122,8 +157,18 @@ class File:
         self.filename = "datapoints.json"
 
     def write_datapoints_to_file(self, datapoints):
+        good_datapoints = {}
+        for key in datapoints.keys():
+            datapoint = datapoints[key]
+            if datapoint.sma is not None \
+                    and datapoint.ema is not None \
+                    and datapoint.vwap is not None \
+                    and datapoint.macd is not None \
+                    and datapoint.rsi is not None \
+                    and datapoint.adx is not None:
+                good_datapoints[key] = datapoint
         fp = open(self.filename, "w")
-        json_dictionary = json.dumps({k: v.__dict__ for k, v in datapoints.items()}, sort_keys=True, indent=4)
+        json_dictionary = json.dumps({k: v.__dict__ for k, v in good_datapoints.items()}, sort_keys=True, indent=4)
         fp.write(json_dictionary)
         print("Wrote results to file: " + self.filename)
 
@@ -131,37 +176,3 @@ class File:
         fp = open(self.filename, "r")
         datapoints = json.load(fp)
         return datapoints
-
-
-class AlphaData:
-    def __init__(self):
-        self.datapoints = {}
-        self.upper_band = None
-        self.lower_band = None
-        self.middle_band = None
-
-    def get_alpha_data(self, datapoints):
-        self.datapoints = datapoints
-        self.find_upper_lower_bands()
-
-    def find_upper_lower_bands(self):
-        high_datapoint = None
-        low_datapoint = None
-        for key in self.datapoints.keys():
-            if high_datapoint is None:
-                if self.datapoints[key]["close"] is not None:
-                    high_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key]["close"]
-                if current is not None and current < high_datapoint["close"]:
-                    high_datapoint = self.datapoints[key]
-            if low_datapoint is None:
-                if self.datapoints[key]["close"] is not None:
-                    low_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key]["close"]
-                if current is not None and current > low_datapoint["close"]:
-                    low_datapoint = self.datapoints[key]
-        self.upper_band = high_datapoint
-        self.lower_band = low_datapoint
-        self.middle_band = (float(high_datapoint["close"]) + float(low_datapoint["close"])) / 2

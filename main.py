@@ -1,28 +1,26 @@
 from alphavantage_api import File, AlphaApi, AlphaData
-from chart import AlphaChart
+from alpha_chart import AlphaChart
 
 
-def scan_datapoints():
-    api = AlphaApi()
+# Scans datapoints from alphavantage api and writes them to file
+def scan_datapoints(symbol):
+    datapoints = AlphaApi("AAPL").get_datapoints()
     file = File()
-    api.get_datapoints()
-    datapoints = api.datapoints
     file.write_datapoints_to_file(datapoints)
 
 
-def get_datapoints():
+# Reads datapoints from file and parses them into alphadata
+def read_alphadata():
     file = File()
-    return file.read_datapoints_from_file()
+    datapoints = file.read_datapoints_from_file()
+    return AlphaData(datapoints)
 
 
-def get_alphadata():
-    datapoints = get_datapoints()
-    alphadata = AlphaData()
-    alphadata.get_alpha_data(datapoints)
-    return alphadata
+# Displays alphadata as a chart
+def display_chart():
+    chart = AlphaChart(read_alphadata())
+    chart.display_chart()
 
 
-# scan_datapoints()
-alphadata = get_alphadata()
-alphachart = AlphaChart(alphadata)
-alphachart.display_chart()
+# scan_datapoints("AAPL")
+display_chart()
