@@ -1,10 +1,11 @@
 from alphavantage_api import File, AlphaApi, AlphaData
+from simulator import Simulator
 from alpha_chart import AlphaChart
 
 
 # Scans datapoints from alphavantage api and writes them to file
 def scan_datapoints(symbol):
-    datapoints = AlphaApi("AAPL").get_datapoints()
+    datapoints = AlphaApi("TSLA").get_datapoints()
     file = File()
     file.write_datapoints_to_file(datapoints)
 
@@ -22,5 +23,13 @@ def display_chart():
     chart.display_chart()
 
 
+# Simulate buying and selling
+def run_simulator():
+    alphadata = read_alphadata()
+    simulator = Simulator(alphadata.datapoints)
+    simulator.trade_randomly()
+
+
 # scan_datapoints("AAPL")
-display_chart()
+# display_chart()
+run_simulator()
