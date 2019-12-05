@@ -6,7 +6,7 @@ class File:
         self.filename = "unknown_datapoints.json"
         self.directory = "data/"
 
-    def write_datapoints_to_file(self, datapoints, symbol):
+    def write_datapoints_to_json(self, datapoints, symbol):
         self.filename = self.directory + symbol + "_datapoints.json"
         good_datapoints = {}
         for key in datapoints.keys():
@@ -44,13 +44,12 @@ class File:
                        datapoint.adx
                 lines.append(line)
         fp = open(self.filename, "w")
-        for line in lines:
+        for line in reversed(lines):
             fp.write(line + "\n")
         print("Wrote results to file: " + self.filename)
 
-
-def read_datapoints_from_file(self, symbol):
-    self.filename = self.directory + symbol + "_datapoints.json"
-    fp = open(self.filename, "r")
-    datapoints = json.load(fp)
-    return datapoints
+    def read_datapoints_from_file(self, symbol):
+        self.filename = self.directory + symbol + "_datapoints.json"
+        fp = open(self.filename, "r")
+        datapoints = json.load(fp)
+        return datapoints
