@@ -18,8 +18,6 @@ class AlphaApi:
 
     def scan_datapoints(self):
         self.get_datapoints()
-        file = File()
-        file.write_datapoints_to_file(self.datapoints)
 
     def get_datapoints(self):
         self.get_intraday_data()
@@ -68,33 +66,6 @@ class AlphaApi:
 class AlphaData:
     def __init__(self, datapoints):
         self.datapoints = datapoints
-        self.upper_band = None
-        self.lower_band = None
-        self.middle_band = None
-        self.sma_distance = None
-        self.find_upper_lower_bands()
-
-    def find_upper_lower_bands(self):
-        high_datapoint = None
-        low_datapoint = None
-        for key in self.datapoints.keys():
-            if high_datapoint is None:
-                if self.datapoints[key]["close"] is not None:
-                    high_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key]["close"]
-                if current is not None and current < high_datapoint["close"]:
-                    high_datapoint = self.datapoints[key]
-            if low_datapoint is None:
-                if self.datapoints[key]["close"] is not None:
-                    low_datapoint = self.datapoints[key]
-            else:
-                current = self.datapoints[key]["close"]
-                if current is not None and current > low_datapoint["close"]:
-                    low_datapoint = self.datapoints[key]
-        self.upper_band = float(high_datapoint["close"])
-        self.lower_band = float(low_datapoint["close"])
-        self.middle_band = (float(high_datapoint["close"]) + float(low_datapoint["close"])) / 2
 
 
 class DataPoint:
@@ -150,29 +121,3 @@ class DataPoint:
             'rsi': float(self.rsi) if self.rsi else None,
             'adx': float(self.adx) if self.adx else None
         })
-
-
-class File:
-    def __init__(self):
-        self.filename = "datapoints.json"
-
-    def write_datapoints_to_file(self, datapoints):
-        good_datapoints = {}
-        for key in datapoints.keys():
-            datapoint = datapoints[key]
-            if datapoint.sma is not None \
-                    and datapoint.ema is not None \
-                    and datapoint.vwap is not None \
-                    and datapoint.macd is not None \
-                    and datapoint.rsi is not None \
-                    and datapoint.adx is not None:
-                good_datapoints[key] = datapoint
-        fp = open(self.filename, "w")
-        json_dictionary = json.dumps({k: v.__dict__ for k, v in good_datapoints.items()}, sort_keys=True, indent=4)
-        fp.write(json_dictionary)
-        print("Wrote results to file: " + self.filename)
-
-    def read_datapoints_from_file(self):
-        fp = open(self.filename, "r")
-        datapoints = json.load(fp)
-        return datapoints
