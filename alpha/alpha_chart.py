@@ -15,7 +15,7 @@ class AlphaChart:
     def display_chart(self):
         # Plot Price Chart with EMA, SMA and VWAP
         ax = plt.subplot(211)
-        plt.plot(self.df['Close'], label=self.symbol, color='blue')
+        plt.plot(self.df['Close'], label=self.symbol, color='black')
         plt.plot(self.df['SMA'], label='SMA', color='green')
         plt.plot(self.df['EMA'], label='EMA', color='cyan')
         plt.plot(self.df['VWAP'], label='VWAP', color='purple')
