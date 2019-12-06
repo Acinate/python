@@ -1,5 +1,6 @@
-import random
 import math
+import random
+
 from alpha.alpha_file import AlphaFile
 
 
@@ -19,6 +20,7 @@ class RandomSimulator:
         self.df = AlphaFile(symbol).read_datapoints_from_csv()
         self.balance = 10000  # total balance
         self.shares = 0  # total number of shares owned
+        self.profit = 0  # new balance minus original balance
 
     def purchase_shares(self, cost):
         # calculate max number of shares we can purchase
@@ -64,7 +66,13 @@ class RandomSimulator:
 
         # sell off remaining shares
         self.sell_all_shares(last_price, self.shares)
+
+        # calculate profit
+        self.profit = self.balance - 10000
+
         # output results
-        print("Balance: " + str(self.balance))
-        print("Shares: " + str(self.shares))
-        print("Profit: " + str(self.balance - 10000))
+        # print("Balance: " + str(self.balance))
+        # print("Shares: " + str(self.shares))
+        # print("Profit: " + str(self.balance - 10000))
+
+        return self.profit
