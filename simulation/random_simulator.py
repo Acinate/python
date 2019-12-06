@@ -1,5 +1,6 @@
 import random
 import math
+from alpha.alpha_file import AlphaFile
 
 
 def generate_random_signal():
@@ -12,17 +13,12 @@ def generate_random_signal():
         return "BUY"
 
 
-class Simulator:
-    def __init__(self, datapoints):
-        self.datapoints = datapoints
+class RandomSimulator:
+    def __init__(self, symbol):
+        self.symbol = symbol
+        self.df = AlphaFile(symbol).read_datapoints_from_csv()
         self.balance = 10000  # total balance
         self.shares = 0  # total number of shares owned
-
-    def print_datapoints(self):
-        for key in self.datapoints.keys():
-            date = self.datapoints[key]["times"]
-            close = self.datapoints[key]["close"]
-            print(date + ":" + close)
 
     def purchase_shares(self, cost):
         # calculate max number of shares we can purchase
@@ -57,9 +53,9 @@ class Simulator:
 
     def trade_randomly(self):
         last_price = None
-        for key in self.datapoints.keys():
+        for close in self.df['Close'].values:
             # cost of share at current datapoint
-            cost = float(self.datapoints[key]["close"])
+            cost = close
             # generate buy, hold or sell signal
             signal = generate_random_signal()
             # execute trade based on generated signal

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import pandas as pd
+from alpha.alpha_file import AlphaFile
 
 
 class AlphaChart:
@@ -9,8 +9,7 @@ class AlphaChart:
         self.load_chart_data()
 
     def load_chart_data(self):
-        self.df = pd.read_csv("data/" + self.symbol + "_datapoints.csv",
-                              names=['Date', 'Close', 'SMA', 'EMA', 'VWAP', 'MACD', 'RSI', 'ADX'])
+        self.df = AlphaFile(self.symbol).read_datapoints_from_csv()
 
     def display_chart(self):
         # Plot Price Chart with EMA, SMA and VWAP
