@@ -36,6 +36,7 @@ model.summary()
 
 model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
+# Train the model
 x_val = train_data[:10000]
 x_train = train_data[10000:]
 
@@ -45,11 +46,11 @@ y_train = train_labels[10000:]
 # Fit the model
 fitModel = model.fit(x_train, y_train, epochs=40, batch_size=512, validation_data=(x_val, y_val), verbose=1)
 
+# Run the model
 results = model.evaluate(test_data, test_labels)
 
-test_review = test_data[0]
-predict = model.predict([test_review])
-print(decode_review(test_review))
-print("Prediction: " + str(predict[0]))
-print("Actual: " + str(test_labels[0]))
-print(results)
+# Save the model
+model.save("tensorflow/models/text_classification_model.h5")
+
+# Load the model
+model = keras.models.load_model("tensorflow/models/text_classification_model.h5")
