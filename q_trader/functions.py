@@ -19,5 +19,13 @@ def getState(data, t, n):
     block = data[d:t + 1] if d >= 0 else -d * [data[0]] + data[0:t + 1]  # pad with t0
     res = []
     for i in range(n - 1):
-        res.append(sigmoid(block[i + 1] - block[i]))
+        res.append(sigmoid(block[i + 1][0] - block[i][0]))
     return np.array([res])
+
+
+# formats alpha data into array of indicators
+def formatAlphaData(data):
+    formatted = []
+    for i in range(data.shape[0]):
+        formatted.append(data.iloc[i].values[1:].tolist())
+    return formatted
