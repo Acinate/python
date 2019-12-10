@@ -1,7 +1,7 @@
-from alpha.alpha_api import AlphaApi, AlphaData
-from simulation.random_simulator import RandomSimulator
+from alpha.alpha_api import AlphaApi
 from alpha.alpha_chart import AlphaChart
 from alpha.alpha_file import AlphaFile
+from simulation.random_simulator import RandomSimulator
 
 
 # Scans datapoints from alphavantage api and writes them to file
@@ -27,5 +27,7 @@ def run_simulator(symbol):
 # scan_datapoints("JNUG")
 # scan_datapoints("JDST")
 # scan_datapoints("UWT")
-# display_chart("UWT")
-run_simulator("JNUG")
+display_chart("UWT")
+# run_simulator("JNUG")
+
+# plot_scatter("JNUG", "UWT", "JDST")
