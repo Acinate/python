@@ -23,11 +23,26 @@ def run_simulator(symbol):
     simulator.trade_randomly()
 
 
-# scan_datapoints("MSFT")
+# scan_datapoints("AMZN")
 # scan_datapoints("JNUG")
 # scan_datapoints("JDST")
 # scan_datapoints("UWT")
-display_chart("UWT")
+# display_chart("UWT")
 # run_simulator("JNUG")
 
+# price_chart = PriceChart("AMZN")
+# price_chart.display_chart()
+
 # plot_scatter("JNUG", "UWT", "JDST")
+
+# jnug_profits, jdst_profits, amzn_profits = [], [], []
+#
+# jnug_sim = simulator = RandomSimulator("JNUG")
+# jdst_sim = simulator = RandomSimulator("JDST")
+# amzn_sim = simulator = RandomSimulator("AMZN")
+# for i in range(1000):
+#     jnug_profits.append(jnug_sim.trade_randomly())
+#     jdst_profits.append(jdst_sim.trade_randomly())
+#     amzn_profits.append(amzn_sim.trade_randomly())
+
+print("done")
