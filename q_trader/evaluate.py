@@ -28,7 +28,7 @@ try:
     # Setup our plot
     fig, ax = plt.subplots()
     timeseries_iter = 0
-    # plt_data = []
+    plt_data = []
 
     for t in range(l):
         action = agent.act(state)
@@ -39,14 +39,14 @@ try:
 
         if action == 1:  # buy
             agent.inventory.append(data[t][0])
-            # plt_data.append((timeseries_iter, data[t], 'Buy'))
+            plt_data.append((timeseries_iter, data[t][0], 'Buy'))
             # print("Buy: " + formatPrice(data[t][0]))
 
         elif action == 2 and len(agent.inventory) > 0:  # sell
             bought_price = agent.inventory.pop(0)
             reward = max(data[t][0] - bought_price, 0)
             total_profit += data[t][0] - bought_price
-            # plt_data.append((timeseries_iter, data[t], 'Sell'))
+            plt_data.append((timeseries_iter, data[t][0], 'Sell'))
             # print("Sell: " + formatPrice(data[t][0]) + " | Profit: " + formatPrice(data[t][0] - bought_price))
 
         # timeseries_iter += 1
@@ -62,10 +62,10 @@ try:
         if len(agent.memory) > batch_size:
             agent.expReplay(batch_size)
 
-        # plt_data = np.array(plt_data)/
-# ax.plot(plt_data[:, 0], plt_data[:, 1])
-# Display our plots
-# plt.show()
+    plt_data = np.array(plt_data)
+    ax.plot(plt_data[:, 0], plt_data[:, 1])
+    # Display our plots
+    plt.show()
 except Exception as e:
     print("Error is: " + e)
 finally:
