@@ -9,8 +9,8 @@ from keras.optimizers import Adam
 
 
 class Agent:
-    def __init__(self, is_eval=False, model_name=""):
-        self.state_size = 10  # normalized previous days
+    def __init__(self, state_size, is_eval=False, model_name=""):
+        self.state_size = state_size  # normalized previous days
         self.action_size = 3  # hold, buy, sell
         self.memory = deque(maxlen=1000)
         self.inventory = []
