@@ -1,12 +1,12 @@
 from alpha.alpha_file import AlphaFile
-from q_trader.agent import Agent
+from q_trader.agent import A2CAgent
 from q_trader.functions import *
 
 symbol = "JNUG"
 window_size = 10
 epoch_count = 1000
 
-agent = Agent(window_size)
+agent = A2CAgent(window_size, action_size=3)
 data = formatAlphaData(AlphaFile(symbol).read_datapoints_from_csv())
 l = len(data) - 1
 batch_size = 32
@@ -27,14 +27,13 @@ for e in range(epoch_count + 1):
 
         if action == 1:  # buy
             agent.inventory.append(data[t][0])
-            print("Buy: ", formatPrice(data[t][0]))
+            # print("Buy: ", formatPrice(data[t][0]))
         elif action == 2 and len(agent.inventory) > 0:  # sell
             bought_price = agent.inventory.pop(0)
-            reward = max(data[t][0] - bought_price, 0)
+            # reward = max(data[t][0] - bought_price, 0)
+            reward = data[t][0] - bought_price
             total_profit += data[t][0] - bought_price
-            print("Sell: ", formatPrice(data[t][0]), " | Profit: " + formatPrice(data[t][0] - bought_price))
-        elif action == 0:  # hold
-            print("Hold: ", formatPrice(data[t][0]))
+            # print("Sell: ", formatPrice(data[t][0]), " | Profit: " + formatPrice(data[t][0] - bought_price))
         done = True if t == l - 1 else False
         agent.memory.append((state, action, reward, next_state, done))
         state = next_state
@@ -48,4 +47,5 @@ for e in range(epoch_count + 1):
             agent.expReplay(batch_size)
 
     if e % 10 == 0:
-        agent.model.save("models/model_ep" + str(e))
+        agent.actor.save("models/model_ep" + str(e) + ".hdf5")
+        agent.actor.save("models/model_ep" + str(e) + ".hdf5")
