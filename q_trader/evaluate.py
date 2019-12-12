@@ -12,55 +12,66 @@ if len(sys.argv) != 3:
     exit()
 
 stock_name, model_name = sys.argv[1], sys.argv[2]
-model = load_model("models/" + model_name)
+model_path = "models/" + model_name
+model = load_model(model_path)
 window_size = model.layers[0].input.shape.as_list()[1]
 
-agent = Agent(window_size, action_size=3, load_models=True, actor_model_file="models/" + model_name)
-data = formatAlphaData(AlphaFile(stock_name).read_datapoints_from_csv())
-l = len(data) - 1
+agent = Agent(window_size, action_size=3, load_models=True, actor_model_file=model_path)
+data = format_alpha_data(AlphaFile(stock_name).read_datapoints_from_csv())
+data_size = len(data) - 1
 batch_size = 32
 
-state = getState(data, 0, window_size + 1)
+state = get_state(data, 0, window_size + 1)
 total_profit = 0
 agent.inventory = []
 
 # Setup our plot
 fig, ax = plt.subplots()
-timeseries_iter = 0
+plt_index = 0
 plt_data = []
 
-for t in range(l):
+# Iterate through all datapoints
+for t in range(data_size):
+    # Get best action based on policy
     action = agent.act(state)
-
-    # sit
-    next_state = getState(data, t + 1, window_size + 1)
+    # Get the previous 10 days of price history
+    next_state = get_state(data, t + 1, window_size + 1)
+    # Initialize our reward as zero
     reward = 0
 
-    if action == 1:  # buy
+    # Action 0 = HOLD
+    if action == 0:
+        plt_data.append((plt_index, data[t][0], 0))
+    # Action 1 = BUY
+    elif action == 1:
         agent.inventory.append(data[t][0])
-        plt_data.append((timeseries_iter, data[t][0], 1))
-        # print("Buy: " + formatPrice(data[t][0]))
-
-    elif action == 2 and len(agent.inventory) > 0:  # sell
+        plt_data.append((plt_index, data[t][0], 1))
+    # Action 2 = SELL
+    elif action == 2 and len(agent.inventory) > 0:
         bought_price = agent.inventory.pop(0)
         reward = max(data[t][0] - bought_price, 0)
         total_profit += data[t][0] - bought_price
-        plt_data.append((timeseries_iter, data[t][0], 2))
-        # print("Sell: " + formatPrice(data[t][0]) + " | Profit: " + formatPrice(data[t][0] - bought_price))
+        plt_data.append((plt_index, data[t][0], 2))
+    else:
+        plt_data.append((plt_index, data[t][0], 0))
 
-    plt_data.append((timeseries_iter, data[t][0], 0))
-    timeseries_iter += 1
-    done = True if t == l - 1 else False
+    # Increment our index (plotting)
+    plt_index += 1
+    # Check if we are at the last datapoint
+    done = True if t == data_size - 1 else False
+    # Add Q-Values to Q-Table
     agent.memory.append((state, action, reward, next_state, done))
+    # Transition to the next state
     state = next_state
-
+    # If memory is getting full, train the actor and critic nn
+    # Then clear recent memory
+    if len(agent.memory) > batch_size:
+        agent.exp_replay(batch_size)
+    # Show simulation results
     if done:
         print("--------------------------------")
         print(stock_name + " Total Profit: " + formatPrice(total_profit))
         print("--------------------------------")
-
-    if len(agent.memory) > batch_size:
-        agent.exp_replay(batch_size)
 
 
 def get_color(n):
@@ -74,6 +85,7 @@ def get_color(n):
         return get_color(0)
 
 
+# Plot simulation results
 plt_data = np.array(plt_data)
 colors = []
 for data in plt_data:
