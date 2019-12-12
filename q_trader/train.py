@@ -7,13 +7,13 @@ window_size = 10
 epoch_count = 1000
 
 agent = Agent(window_size, action_size=3)
-data = formatAlphaData(AlphaFile(symbol).read_datapoints_from_csv())
+data = format_alpha_data(AlphaFile(symbol).read_datapoints_from_csv())
 l = len(data) - 1
 batch_size = 32
 
 for e in range(epoch_count + 1):
     print("Episode ", e, "/", epoch_count)
-    state = getState(data, 0, window_size + 1)
+    state = get_state(data, 0, window_size + 1)
 
     total_profit = 0
     agent.inventory = []
@@ -22,7 +22,7 @@ for e in range(epoch_count + 1):
         action = agent.act(state)
 
         # hold
-        next_state = getState(data, t + 1, window_size + 1)
+        next_state = get_state(data, t + 1, window_size + 1)
         reward = 0
 
         if action == 1:  # buy
