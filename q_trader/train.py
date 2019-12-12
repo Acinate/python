@@ -1,12 +1,12 @@
 from alpha.alpha_file import AlphaFile
-from q_trader.agent import A2CAgent
+from q_trader.agent import Agent
 from q_trader.functions import *
 
-symbol = "JDST"
+symbol = "JNUG"
 window_size = 10
 epoch_count = 1000
 
-agent = A2CAgent(window_size, action_size=3)
+agent = Agent(window_size, action_size=3)
 data = formatAlphaData(AlphaFile(symbol).read_datapoints_from_csv())
 l = len(data) - 1
 batch_size = 32
@@ -44,7 +44,7 @@ for e in range(epoch_count + 1):
             print("--------------------------------")
 
         if len(agent.memory) > batch_size:
-            agent.expReplay(batch_size)
+            agent.exp_replay(batch_size)
 
     if e % 10 == 0:
         agent.actor.save("models/" + symbol + "_model_ep" + str(e) + ".hdf5")

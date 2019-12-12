@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from keras.models import load_model
 
 from alpha.alpha_file import AlphaFile
-from q_trader.agent import A2CAgent
+from q_trader.agent import Agent
 from q_trader.functions import *
 
 try:
@@ -16,7 +16,7 @@ try:
     model = load_model("models/" + model_name)
     window_size = model.layers[0].input.shape.as_list()[1]
 
-    agent = A2CAgent(window_size, action_size=3, load_models=True, actor_model_file="models/" + model_name)
+    agent = Agent(window_size, action_size=3, load_models=True, actor_model_file="models/" + model_name)
     data = formatAlphaData(AlphaFile(stock_name).read_datapoints_from_csv())
     l = len(data) - 1
     batch_size = 32
@@ -60,7 +60,7 @@ try:
             print("--------------------------------")
 
         if len(agent.memory) > batch_size:
-            agent.expReplay(batch_size)
+            agent.exp_replay(batch_size)
 
     plt_data = np.array(plt_data)
     ax.plot(plt_data[:, 0], plt_data[:, 1])
