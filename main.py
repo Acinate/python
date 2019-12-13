@@ -1,6 +1,7 @@
 from alpha.alpha_api import AlphaApi
 from alpha.alpha_chart import AlphaChart
 from alpha.alpha_file import AlphaFile
+from charts.price_chart import PriceChart
 from simulation.random_simulator import RandomSimulator
 
 
@@ -23,15 +24,15 @@ def run_simulator(symbol):
     simulator.trade_randomly()
 
 
-# scan_datapoints("AMZN")
+scan_datapoints("MSFT")
 # scan_datapoints("JNUG")
 # scan_datapoints("JDST")
 # scan_datapoints("UWT")
 # display_chart("UWT")
 # run_simulator("JNUG")
 
-# price_chart = PriceChart("AMZN")
-# price_chart.display_chart()
+price_chart = PriceChart("MSFT")
+price_chart.display_chart()
 
 # plot_scatter("JNUG", "UWT", "JDST")
 
@@ -44,5 +45,3 @@ def run_simulator(symbol):
 #     jnug_profits.append(jnug_sim.trade_randomly())
 #     jdst_profits.append(jdst_sim.trade_randomly())
 #     amzn_profits.append(amzn_sim.trade_randomly())
-
-print("done")
