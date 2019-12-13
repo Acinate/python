@@ -43,13 +43,13 @@ for t in range(data_size):
     if action == 0:
         plt_data.append((plt_index, data[t][0], 0))
     # Action 1 = BUY
-    elif action == 1:
+    elif action == 1 and len(agent.inventory) == 0:
         agent.inventory.append(data[t][0])
         plt_data.append((plt_index, data[t][0], 1))
     # Action 2 = SELL
     elif action == 2 and len(agent.inventory) > 0:
         bought_price = agent.inventory.pop(0)
-        reward = max(data[t][0] - bought_price, 0)
+        reward = data[t][0] - bought_price
         total_profit += data[t][0] - bought_price
         plt_data.append((plt_index, data[t][0], 2))
     else:
@@ -59,6 +59,16 @@ for t in range(data_size):
     plt_index += 1
     # Check if we are at the last datapoint
     done = True if t == data_size - 1 else False
+    if done:
+        # Sell Remaining Shares
+        while len(agent.inventory) > 0:
+            bought_price = agent.inventory.pop(0)
+            reward = data[t][0] - bought_price
+            total_profit += data[t][0] - bought_price
+        # Show Simulation Results
+        print("--------------------------------")
+        print(stock_name + " Total Profit: " + formatPrice(total_profit))
+        print("--------------------------------")
     # Add Q-Values to Q-Table
     agent.memory.append((state, action, reward, next_state, done))
     # Transition to the next state
@@ -67,11 +77,6 @@ for t in range(data_size):
     # Then clear recent memory
     if len(agent.memory) > batch_size:
         agent.exp_replay(batch_size)
-    # Show simulation results
-    if done:
-        print("--------------------------------")
-        print(stock_name + " Total Profit: " + formatPrice(total_profit))
-        print("--------------------------------")
 
 
 def get_color(n):
@@ -92,5 +97,5 @@ for data in plt_data:
     colors.append(get_color(data[2]))
 xs, ys = plt_data[:, 0], plt_data[:, 1]
 plt.plot(xs, ys, c='black', alpha=0.5)
-plt.scatter(xs, ys, c=colors, s=2)
+plt.scatter(xs, ys, c=colors, s=8)
 plt.show()
