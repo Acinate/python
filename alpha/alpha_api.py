@@ -1,6 +1,7 @@
 import json
 import time
 
+import numpy as np
 import requests
 
 
@@ -39,7 +40,7 @@ class AlphaApi:
             l = ts.get("3. low")
             c = ts.get("4. close")
             v = ts.get("5. volume")
-            dp.add_intraday(o, h, l, c, v)
+            dp.add_ohlcv(o, h, l, c, v)
             self.datapoints[dp.time] = dp
 
     def get_technicals(self):
@@ -62,6 +63,25 @@ class AlphaApi:
                     if self.datapoints.get(key) is not None:
                         self.datapoints.get(key).add_technical(technicals[i], v)
                 i += 1
+
+    def get_daily(self, symbol):
+        url = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + symbol + "&apikey=" + self.key
+        response = requests.get(url)
+        json_response = response.json()
+        daily = json_response.get("Time Series (Daily)")
+        keys = daily.keys()
+        datapoints = []
+        index = 0
+        for key in keys:
+            ts = daily.get(key)
+            o = ts.get("1. open")
+            h = ts.get("2. high")
+            l = ts.get("3. low")
+            c = ts.get("4. close")
+            v = ts.get("5. volume")
+            datapoints.append([len(keys) - index - 1, float(o), float(h), float(l), float(c), int(v)])
+            index += 1
+        return np.array(datapoints)
 
 
 class AlphaData:
@@ -87,7 +107,10 @@ class DataPoint:
         self.rsi = None
         self.adx = None
 
-    def add_intraday(self, o, h, l, c, v):
+    def add_date(self, date):
+        self.time = date
+
+    def add_ohlcv(self, o, h, l, c, v):
         self.open = o
         self.high = h
         self.low = l
