@@ -10,8 +10,8 @@ from sklearn.preprocessing import MinMaxScaler
 # https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=S&apikey=JHGNBLAO8X1183MI&datatype=csv&outputsize=full
 
 # Set the stock symbol & company name
-company_symbol = "VZ"
-company_name = "Verizon"
+company_symbol = "TMUS"
+company_name = "T-Mobile"
 
 # Importing the training set
 dataset_train = pd.read_csv('data/' + company_symbol + '_Stock_Price_Train.csv')
@@ -67,7 +67,7 @@ regressor.add(Dense(units=1))
 regressor.compile(optimizer='adam', loss='mean_squared_error')
 
 # Fitting the RNN to the Training set
-regressor.fit(X_train, y_train, epochs=100, batch_size=32)
+regressor.fit(X_train, y_train, epochs=1, batch_size=32)
 
 # Part 3 - Making the predictions and visualising the results
 
@@ -78,6 +78,7 @@ real_stock_price = dataset_test.iloc[:, 1:2].values
 
 # Getting the predicted stock price of 2017
 dataset_total = pd.concat((dataset_train['open'], dataset_test['open']), axis=0)
+# e.g., dataset_total = 60, dataset_test = 60, window = 60
 inputs = dataset_total[len(dataset_total) - len(dataset_test) - window_size:].values
 inputs = inputs.reshape(-1, 1)
 inputs = sc.transform(inputs)
@@ -88,6 +89,10 @@ X_test = np.array(X_test)
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 predicted_stock_price = regressor.predict(X_test)
 predicted_stock_price = sc.inverse_transform(predicted_stock_price)
+
+# predict the next 5 prices
+for i in range(0, 5):
+    print(i)
 
 # Visualising the results
 plt.plot(real_stock_price, color='red', label='Real ' + company_name + ' Stock Price')
