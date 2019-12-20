@@ -7,8 +7,15 @@ from keras.layers import LSTM
 from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
 
+# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=S&apikey=JHGNBLAO8X1183MI&datatype=csv&outputsize=full
+
+# Set the stock symbol & company name
+company_symbol = "VZ"
+company_name = "Verizon"
+
 # Importing the training set
-dataset_train = pd.read_csv('data/VZ_Stock_Price_Train.csv')
+dataset_train = pd.read_csv('data/' + company_symbol + '_Stock_Price_Train.csv')
+
 # Reverse rows (Data is stored in descending date, we need ascending)
 dataset_train = dataset_train.reindex(index=dataset_train.index[::-1])
 training_set = dataset_train.iloc[:, 1:2].values
@@ -17,11 +24,15 @@ training_set = dataset_train.iloc[:, 1:2].values
 sc = MinMaxScaler(feature_range=(0, 1))
 training_set_scaled = sc.fit_transform(training_set)
 
-# Creating a data structure with 60 timesteps and 1 output
+# Creating a data structure with n timesteps and 1 output
 X_train = []
 y_train = []
-for i in range(60, dataset_train.shape[0]):
-    X_train.append(training_set_scaled[i - 60:i, 0])
+
+# Set the window size
+window_size = 60
+
+for i in range(window_size, dataset_train.shape[0]):
+    X_train.append(training_set_scaled[i - window_size:i, 0])
     y_train.append(training_set_scaled[i, 0])
 X_train, y_train = np.array(X_train), np.array(y_train)
 
@@ -56,36 +67,33 @@ regressor.add(Dense(units=1))
 regressor.compile(optimizer='adam', loss='mean_squared_error')
 
 # Fitting the RNN to the Training set
-regressor.fit(X_train, y_train, epochs=1, batch_size=32)
+regressor.fit(X_train, y_train, epochs=100, batch_size=32)
 
 # Part 3 - Making the predictions and visualising the results
 
 # Getting the real stock price of 2017
-dataset_test = pd.read_csv('data/VZ_Stock_Price_Test.csv')
+dataset_test = pd.read_csv('data/' + company_symbol + '_Stock_Price_Test.csv')
 dataset_test = dataset_test.reindex(index=dataset_test.index[::-1])
 real_stock_price = dataset_test.iloc[:, 1:2].values
 
-test = dataset_test['open']
-print(test)
-
 # Getting the predicted stock price of 2017
 dataset_total = pd.concat((dataset_train['open'], dataset_test['open']), axis=0)
-inputs = dataset_total[len(dataset_total) - len(dataset_test) - 60:].values
+inputs = dataset_total[len(dataset_total) - len(dataset_test) - window_size:].values
 inputs = inputs.reshape(-1, 1)
 inputs = sc.transform(inputs)
 X_test = []
-for i in range(60, 80):
-    X_test.append(inputs[i - 60:i, 0])
+for i in range(window_size, window_size + dataset_test.shape[0]):
+    X_test.append(inputs[i - window_size:i, 0])
 X_test = np.array(X_test)
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 predicted_stock_price = regressor.predict(X_test)
 predicted_stock_price = sc.inverse_transform(predicted_stock_price)
 
 # Visualising the results
-plt.plot(real_stock_price, color='red', label='Real Google Stock Price')
-plt.plot(predicted_stock_price, color='blue', label='Predicted Google Stock Price')
-plt.title('Google Stock Price Prediction')
+plt.plot(real_stock_price, color='red', label='Real ' + company_name + ' Stock Price')
+plt.plot(predicted_stock_price, color='blue', label='Predicted ' + company_name + ' Stock Price')
+plt.title(company_name + ' Stock Price Prediction')
 plt.xlabel('Time')
-plt.ylabel('Google Stock Price')
+plt.ylabel(company_name + ' Stock Price')
 plt.legend()
 plt.show()
