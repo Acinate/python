@@ -13,18 +13,18 @@ from sklearn.preprocessing import MinMaxScaler
 company_symbol = "TMUS"
 company_name = "T-Mobile"
 
-# Importing the training set
+# Import the training set
 dataset_train = pd.read_csv('data/' + company_symbol + '_Stock_Price_Train.csv')
 
 # Reverse rows (Data is stored in descending date, we need ascending)
 dataset_train = dataset_train.reindex(index=dataset_train.index[::-1])
 training_set = dataset_train.iloc[:, 1:2].values
 
-# Scale the prices from 0 - 1
+# Scale the prices between 0 - 1
 sc = MinMaxScaler(feature_range=(0, 1))
 training_set_scaled = sc.fit_transform(training_set)
 
-# Creating a data structure with n timesteps and 1 output
+# Create a data structure with n timesteps and 1 output
 X_train = []
 y_train = []
 
@@ -39,46 +39,42 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 # Reshaping
 X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
 
-# Part 2 - Building the RNN
-
 # Initialising the RNN
 regressor = Sequential()
 
-# Adding the first LSTM layer and some Dropout regularisation
+# Adding the first LSTM layer
 regressor.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
 regressor.add(Dropout(0.2))
 
-# Adding a second LSTM layer and some Dropout regularisation
+# Adding a second LSTM layer
 regressor.add(LSTM(units=50, return_sequences=True))
 regressor.add(Dropout(0.2))
 
-# Adding a third LSTM layer and some Dropout regularisation
+# Adding a third LSTM layer
 regressor.add(LSTM(units=50, return_sequences=True))
 regressor.add(Dropout(0.2))
 
-# Adding a fourth LSTM layer and some Dropout regularisation
+# Adding a fourth LSTM layer
 regressor.add(LSTM(units=50))
 regressor.add(Dropout(0.2))
 
-# Adding the output layer
+# Add the output layer
 regressor.add(Dense(units=1))
 
-# Compiling the RNN
+# Compiling the RNN, add adam optimizer and mean_squared_error loss reducer for BPN
 regressor.compile(optimizer='adam', loss='mean_squared_error')
 
-# Fitting the RNN to the Training set
+# Train the NN using training data
 regressor.fit(X_train, y_train, epochs=100, batch_size=32)
 
-# Part 3 - Making the predictions and visualising the results
-
-# Getting the real stock price of 2017
+# Get the real stock prices
 dataset_test = pd.read_csv('data/' + company_symbol + '_Stock_Price_Test.csv')
 dataset_test = dataset_test.reindex(index=dataset_test.index[::-1])
 real_stock_price = dataset_test.iloc[:, 1:2].values
 
-# Getting the predicted stock price of 2017
+# Get the predicted stock prices
 dataset_total = pd.concat((dataset_train['open'], dataset_test['open']), axis=0)
-# e.g., dataset_total = 60, dataset_test = 60, window = 60
+# e.g., dataset_total = 3192, dataset_test = 14, window = 60, dataset_total[3118].values
 inputs = dataset_total[len(dataset_total) - len(dataset_test) - window_size:].values
 inputs = inputs.reshape(-1, 1)
 inputs = sc.transform(inputs)
@@ -90,11 +86,7 @@ X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 predicted_stock_price = regressor.predict(X_test)
 predicted_stock_price = sc.inverse_transform(predicted_stock_price)
 
-# predict the next 5 prices
-for i in range(0, 5):
-    print(i)
-
-# Visualising the results
+# Plot results
 plt.plot(real_stock_price, color='red', label='Real ' + company_name + ' Stock Price')
 plt.plot(predicted_stock_price, color='blue', label='Predicted ' + company_name + ' Stock Price')
 plt.title(company_name + ' Stock Price Prediction')
