@@ -3,9 +3,9 @@ import sys
 import matplotlib.pyplot as plt
 from keras.models import load_model
 
-from alpha.alpha_file import AlphaFile
-from q_trader.agent import Agent
-from q_trader.functions import *
+from machine_learning.alpha.alpha_file import AlphaFile
+from machine_learning.q_trader.agent import Agent
+from machine_learning.q_trader.functions import *
 
 if len(sys.argv) != 3:
     print("Usage: python evaluate.py [stock] [model]")

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from alpha.alpha_file import AlphaFile
+from machine_learning.alpha.alpha_file import AlphaFile
 
 
 class AlphaChart:

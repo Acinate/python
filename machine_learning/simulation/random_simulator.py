@@ -1,7 +1,7 @@
 import math
 import random
 
-from alpha.alpha_file import AlphaFile
+from machine_learning.alpha.alpha_file import AlphaFile
 
 
 def generate_random_signal():
