@@ -1,3 +1,4 @@
+import math
 from typing import List
 from unittest import TestCase
 
@@ -11,8 +12,22 @@ class TreeNode:
 
 
 # constructs a Binary Tree Node from a List
-def from_list(lst: List[int]):
-    raise NotImplemented()
+def from_list(lst: List[int], node=None, height=0):
+    height += 1
+    if len(lst) <= 0:
+        return node
+    if node is None and len(lst) > 0:
+        node = TreeNode(lst.pop(0))
+    count: int = int(math.pow(2, height))
+    items: List[int] = lst[0:count]
+    left: List[int] = items[:len(items) // 2]
+    right: List[int] = items[len(items) // 2:]
+    while items:
+        lst.pop(0)
+        items.pop(0)
+    node.left = from_list(lst, node, height)
+    node.right = from_list(lst, node, height)
+    return node
 
 
 # converts a Tree into a List (Breadth First Traversal)
@@ -62,3 +77,8 @@ class TestTreeNode(TestCase):
         tree2.right.right = TreeNode(5)
         lst2: List[int] = to_list(tree2)
         self.assertEqual(lst2, [1, 2, 3, None, 4, None, 5])
+
+    def test_to_tree(self):
+        list1 = [1, 2, 3, 4, 5, 6, 7]
+        tree1 = from_list(list1)
+        self.assertEqual(to_list(tree1), list1)
