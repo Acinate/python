@@ -4,17 +4,14 @@ from unittest import TestCase
 
 class Solution:
     def longestCommonPrefix(self, strs: List[str]) -> str:
-        if strs is None or len(strs) == 0:
+        if not strs:
             return ""
-        for i in range(0, len(strs)):
-            if len(strs[0]) <= i:
-                return ""
-            c: str = strs[0][i]
-            for j in range(1, len(strs)):
-                if i == len(strs[j]) or strs[j][i] != c:
-                    return strs[0][0:i]
-
-        return strs[0]
+        shortest = min(strs, key=len)
+        for i, ch in enumerate(shortest):
+            for other in strs:
+                if other[i] != ch:
+                    return shortest[:i]
+        return shortest
 
 
 class TestSolution(TestCase):
